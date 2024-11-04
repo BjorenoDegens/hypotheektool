@@ -1,42 +1,69 @@
 package nl.rocnijmegen.testing;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.junit.jupiter.api.extension.ExtendWith;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
 
-import java.util.Scanner;
-
-@ExtendWith(MockitoExtension.class)
 public class AppIntegrationTest {
-
-    @Mock
-    private Scanner mockScanner;
-
-    @InjectMocks
-    private App app;
 
     @Test
     public void testBerekenLeningMetPartner() {
-        when(mockScanner.next()).thenReturn("2000", "ja", "2000", "nee", "25", "1234", "10");
+        String input = "2000\nja\n2000\nnee\n25\n1234\n10";
+        InputStream inputStream = new ByteArrayInputStream(input.getBytes());
+        System.setIn(inputStream);
 
-        app.hypotheekCalculator();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(outputStream));
+
+        App.main(new String[0]);
+
+        System.setOut(originalOut);
+
+        String actualOutput = outputStream.toString();
+        assertTrue(actualOutput.contains("Het maximaal te lenen bedrag is: €"), "Max loan amount not displayed correctly.");
+        assertTrue(actualOutput.contains("De maandlasten zijn: €"), "Monthly payment not displayed correctly.");
     }
 
     @Test
     public void testBerekenLeningZonderPartner() {
-        when(mockScanner.next()).thenReturn("2000", "nee", "nee", "25", "1234", "10");
+        String input = "2000\nnee\nnee\n25\n1234\n10";
+        InputStream inputStream = new ByteArrayInputStream(input.getBytes());
+        System.setIn(inputStream);
 
-        app.hypotheekCalculator();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(outputStream));
+
+        App.main(new String[0]);
+
+        System.setOut(originalOut);
+
+        String actualOutput = outputStream.toString();
+        assertTrue(actualOutput.contains("Het maximaal te lenen bedrag is: €"), "Max loan amount not displayed correctly.");
+        assertTrue(actualOutput.contains("De maandlasten zijn: €"), "Monthly payment not displayed correctly.");
     }
 
     @Test
     public void testGeblokkeerdePostcodeFout() {
-        when(mockScanner.next()).thenReturn("2000", "ja", "2000", "nee", "25", "9682", "10");
+        String input = "2000\nja\n2000\nnee\n25\n9682\n10";
+        InputStream inputStream = new ByteArrayInputStream(input.getBytes());
+        System.setIn(inputStream);
 
-        app.hypotheekCalculator();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(outputStream));
+
+        App.main(new String[0]);
+
+        System.setOut(originalOut);
+
+        String actualOutput = outputStream.toString();
+        assertTrue(actualOutput.contains("Uw postcode komt niet in aanmerking voor een hypotheek vanwege aardbevingsrisico's."),
+                "Blocked postcode message not displayed.");
     }
 }
